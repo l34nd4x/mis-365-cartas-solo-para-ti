@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Mis 365 cartas solo para ti</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            color: #5C4033;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            background: url('estrellas.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        h1 {
+            font-size: 6rem;
+            color: #FFF5E1;
+            text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.8);
+            margin-top: 40px;
+            font-family: 'Dancing Script', cursive;
+            font-style: italic;
+        }
+
+        .month h2 {
+            font-size: 2.5rem;
+            color: #FFF5E1;
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.7);
+            font-family: 'Georgia', serif;
+        }
+
+        .month-container {
+            margin-top: 30px;
+            padding: 40px 10%;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1.5cm;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .envelope {
+            width: 120px;
+            height: 170px;
+            background: rgba(255, 239, 219, 0.8);
+            border: 3px solid #5C4033;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform-origin: top;
+            transition: transform 0.6s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        .envelope span {
+            z-index: 1;
+            font-size: 1.6rem;
+            color: #5C4033;
+        }
+
+        .envelope:hover {
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
+            transform: scale(1.05);
+        }
+
+        /* Estilos para el popup */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 239, 219, 0.95);
+            border: 2px solid #5C4033;
+            border-radius: 8px;
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+            z-index: 10000;
+            color: #5C4033;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            word-wrap: break-word; /* Evita el desbordamiento de palabras largas */
+            max-height: 90vh; /* Ajusta la altura máxima */
+            overflow-y: auto; /* Permite desplazamiento vertical si es necesario */
+        }
+
+        .popup h2 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        .popup p {
+            font-size: 1.5rem;
+            margin: 0;
+            white-space: pre-line; /* Respeta los saltos de línea */
+        }
+
+        .popup .close-btn {
+            margin-top: 10px;
+            background-color: #5C4033;
+            color: #FFFFFF;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .popup .close-btn:hover {
+            background-color: #3C2F2F;
+        }
+
+        /* Fondo para el popup */
+        .popup-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            display: none;
+        }
+
+        /* Estilos para los días desbloqueados */
+        .unlocked {
+            opacity: 1;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <h1>Mis 365 cartas solo para ti</h1>
+
+    <div class="month-container" id="months-container">
+        <!-- Aquí se generarán los meses con sus días dinámicamente -->
+    </div>
+
+    <!-- Fondo oscuro para el popup -->
+    <div id="popup-background" class="popup-background"></div>
+
+    <div id="popup" class="popup">
+        <h2>Mi carta para ti, día <span id="day-number"></span></h2>
+        <p id="message"></p>
+        <button class="close-btn" onclick="closePopup()">Cerrar</button>
+    </div>
+
+    <script>
+    const messages = {
+        diciembre: {
+         31: "Feliz últasdasdasdasdte mes ha sido increíble y no puedo esperar a compartir aún más momentos contigo. Te amo.",
+        },
+            enero: {
+        1: "Hola negre, buenos días, este es el primer día de un nuevo año, y quiero agradecerte por todo lo que eres. Siempre serás mi alegría.",
+        2: "Buenas tardes negre, cada día que pasa, me doy cuenta de lo afortunado que soy de tenerte a mi lado.",
+        3: "Buenas noches negre, espero que hayas tenido un día increíble. Siempre pienso en ti, te amo.",
+        4: "Hola negre, buenos días, hoy es otro día para compartir risas y amor. Estoy feliz de tenerte en mi vida.",
+        5: "Buenas tardes negre, tu sonrisa ilumina mis días, siempre eres mi mayor alegría.",
+        6: "Buenas noches negre, que tengas sueños tan dulces como tu amor.",
+        7: "Hola negre, buenos días, quiero agradecerte por cada momento juntos, por cada palabra, por cada sonrisa.",
+        8: "Buenas tardes negre, cada día contigo es un regalo y lo valoro más de lo que puedas imaginar.",
+        9: "Buenas noches negre, siempre me haces sentir tan afortunado. Te quiero mucho.",
+        10: "Hola negre, buenos días, no importa lo que pase, siempre estaré aquí para ti, apoyándote.",
+        11: "Buenas tardes negre, estoy agradecido por tu amor y por la felicidad que traes a mi vida.",
+        12: "Buenas noches negre, que descanses bien, siempre estaré pensando en ti.",
+        13: "Hola negre, buenos días, hoy es un buen día para agradecer todo lo que somos juntos.",
+        14: "Buenas tardes negre, mi amor por ti crece cada día más, y siempre lo hará.",
+        15: "Buenas noches negre, no importa la distancia, siempre estarás en mi corazón.",
+        16: "Hola negre, buenos días, hoy quiero recordarte lo increíble que eres.",
+        17: "Buenas tardes negre, cada día contigo es una bendición, te quiero mucho.",
+        18: "Buenas noches negre, nunca dejes de ser tú, eres perfecto tal y como eres.",
+        19: "Hola negre, buenos días, espero que tengas un día maravilloso lleno de amor.",
+        20: "Buenas tardes negre, eres lo mejor que me ha pasado, siempre me haces sonreír.",
+        21: "Buenas noches negre, mi amor por ti nunca disminuirá, al contrario, siempre crecerá.",
+        22: "Hola negre, buenos días, estoy agradecido por cada momento contigo.",
+        23: "Buenas tardes negre, me siento tan afortunado de compartir mi vida contigo.",
+        24: "Buenas noches negre, te amo más de lo que las palabras pueden expresar.",
+        25: "Hola negre, buenos días, hoy quiero aprovechar para agradecerte por todo lo que eres.",
+        26: "Buenas tardes negre, siempre eres mi razón para sonreír.",
+        27: "Buenas noches negre, que tengas dulces sueños, siempre estarás en mis pensamientos.",
+        28: "Hola negre, buenos días, quiero que sepas que mi amor por ti es infinito.",
+        29: "Buenas tardes negre, cada día contigo es un nuevo motivo para sonreír.",
+        30: "Buenas noches negre, nunca olvides lo especial que eres para mí.",
+        31: "Buenas noches negre, el primer mes del año llegó a su fin, pero mi amor por ti no tiene fin. Te quiero más cada día.",
+            },
+            febrero: {
+        1: "Hola asdasdieza un nuevo mes, y yo siempre estaré aquí para ti, te amo.",
+        2: "Buenas tardes negre, me haces sentir tan afortunado, cada día a tu lado es especial.",
+        3: "Buenas noches negre, mis pensamientos siempre están contigo, te amo.",
+        4: "Hola negre, buenos días, me haces sonreír incluso en los días más difíciles.",
+        5: "Buenas tardes negre, siempre encontraré en ti una razón para ser feliz.",
+        6: "Buenas noches negre, espero que tengas dulces sueños.",
+        7: "Hola negre, buenos días, mi vida es más hermosa por ti.",
+        8: "Buenas tardes negre, mi amor por ti es algo que crece cada día.",
+        9: "Buenas noches negre, hoy fue un buen día, pero siempre será mejor cuando estés a mi lado.",
+        10: "Hola negre, buenos días, cada día contigo es un regalo.",
+        11: "Buenas tardes negre, que el amor y la felicidad siempre te rodeen.",
+        12: "Buenas noches negre, me haces sentir afortunado por amarte.",
+        13: "Hola negre, buenos días, tu amor ilumina mi vida.",
+        14: "Buenas tardes negre, hoy quiero agradecerte por tu amor.",
+        15: "Buenas noches negre, mi amor por ti es más grande de lo que puedas imaginar.",
+        16: "Hola negre, buenos días, me haces sentir completo.",
+        17: "Buenas tardes negre, gracias por ser mi mayor alegría.",
+        18: "Buenas noches negre, cada noche pienso en ti con todo mi amor.",
+        19: "Hola negre, buenos días, hoy es un buen día para disfrutar de tu compañía.",
+        20: "Buenas tardes negre, gracias por darme tu amor.",
+        21: "Buenas noches negre, te amo más cada día.",
+        22: "Hola negre, buenos días, eres lo mejor que me ha pasado.",
+        23: "Buenas tardes negre, siempre estaré aquí para ti.",
+        24: "Buenas noches negre, que descanses y tengas sueños tranquilos.",
+        25: "Hola negre, buenos días, mi amor por ti es incondicional.",
+        26: "Buenas tardes negre, siempre estaré a tu lado.",
+        27: "Buenas noches negre, te deseo una noche llena de paz.",
+        28: "Hola negre, buenos días, cada día contigo es una nueva oportunidad para ser feliz.",
+    },
+    marzo: {
+        1: "Hola negre, buenos días, empieza un nuevo mes y quiero agradecerte por todo lo que haces por mí, te quiero mucho.",
+        2: "Buenas tardes negre, mi vida es más bonita a tu lado, nunca lo olvides.",
+        3: "Buenas noches negre, que descanses y tengas sueños tan hermosos como tu amor.",
+        4: "Hola negre, buenos días, cadaasdsads un regalo, gracias por estar a mi lado.",
+        5: "Buenas tardes negre, me haces sentir tan afortunado, siempre estaré aquí para ti.",
+        6: "Buenas noches negre, aunque el día termine, mi amor por ti sigue creciendo.",
+        7: "Hola negre, buenos días, tu amor ilumina mi vida y me hace sonreír siempre.",
+        8: "Buenas tardes negre, espero que tu día haya sido tan maravilloso como tú.",
+        9: "Buenas noches negre, no importa la distancia, siempre estarás en mis pensamientos.",
+        10: "Hola negre, buenos días, hoy es un buen día para agradecerte por todo lo que eres.",
+        11: "Buenas tardes negre, cada momento contigo es más especial que el anterior.",
+        12: "Buenas noches negre, que descanses bien, siempre pensaré en ti.",
+        13: "Hola negre, buenos días, me haces sentir completo, gracias por ser tú.",
+        14: "Buenas tardes negre, mi amor por ti nunca disminuye, crece cada día.",
+        15: "Buenas noches negre, te amo más de lo que las palabras pueden expresar.",
+        16: "Hola negre, buenos días, cada día contigo es una nueva razón para sonreír.",
+        17: "Buenas tardes negre, me siento tan afortunado de tenerte en mi vida.",
+        18: "Buenas noches negre, siempre estarás en mi corazón, no importa lo que pase.",
+        19: "Hola negre, buenos días, espero que tengas un día lleno de amor y alegría.",
+        20: "Buenas tardes negre, gracias por darme tantos motivos para ser feliz.",
+        21: "Buenas noches negre, mi amor por ti nunca cambiará, solo crecerá.",
+        22: "Hola negre, buenos días, siempre me haces sentir tan afortunado de tenerte.",
+        23: "Buenas tardes negre, cada momento a tu lado es un regalo que valoro profundamente.",
+        24: "Buenas noches negre, que tengas sueños tranquilos, siempre estarás en mi mente.",
+        25: "Hola negre, buenos días, gracias por hacer cada día más especial.",
+        26: "Buenas tardes negre, siempre estaré aquí para apoyarte, no importa lo que pase.",
+        27: "Buenas noches negre, tu amor es lo que me da fuerzas para seguir adelante.",
+        28: "Hola negre, buenos días, me haces sentir completo solo por ser tú.",
+        29: "Buenas tardes negre, te quiero más cada día, nunca lo olvides.",
+        30: "Buenas noches negre, que descanses y tengas un sueño reparador.",
+        31: "Hola negre, buenos días, aunque termine el mes, mi amor por ti sigue siendo infinito.",
+    },
+    abril: {
+        1: "Hola negre, buenos días, empieza un nuevo mes lleno de oportunidades para ser felices juntos.",
+        2: "Buenas tardes negre, eres mi mayor alegría, nunca olvides lo especial que eres para mí.",
+        3: "Buenas noches negre, espero que descanses y sueñes con cosas hermosas.",
+        4: "Hola negre, buenos días, cada día contigo es una bendición que valoro profundamente.",
+        5: "Buenas tardes negre, tu sonrisa ilumina mi vida como nada más.",
+        6: "Buenas noches negre, que tengas sueños tranquilos y reparadores.",
+        7: "Hola negre, buenos días, gracias por ser siempre tú, te quiero mucho.",
+        8: "Buenas tardes negre, mi amor por ti es infinito, nunca lo dudes.",
+        9: "Buenas noches negre, cada noche pienso en lo afortunado que soy de tenerte.",
+        10: "Hola negre, buenos días, me haces sentir completo y agradecido cada día.",
+        11: "Buenas tardes negre, estar contigo es el mejor regalo que la vida me ha dado.",
+        12: "Buenas noches negre, que descanses bien, siempre estaré aquí para ti.",
+        13: "Hola negre, buenos días, eres la razón de mi felicidad diaria.",
+        14: "Buenas tardes negre, te amo más de lo que las palabras pueden expresar.",
+        15: "Buenas noches negre, que tengas dulces sueños, siempre estarás en mi mente.",
+        16: "Hola negre, buenos días, cada día a tu lado es especial y único.",
+        17: "Buenas tardes negre, gracias por llenar mi vida de amor y alegría.",
+        18: "Buenas noches negre, mi amor por ti crece cada día más.",
+        19: "Hola negre, buenos días, espero que tengas un día lleno de felicidad.",
+        20: "Buenas tardes negre, eres mi mayor fortaleza y mi mayor alegría.",
+        21: "Buenas noches negre, nunca olvides cuánto te amo.",
+        22: "Hola negre, buenos días, cada momento contigo es un tesoro.",
+        23: "Buenas tardes negre, gracias por todo el amor que me das día a día.",
+        24: "Buenas noches negre, espero que descanses bien, siempre estaré pensando en ti.",
+        25: "Hola negre, buenos días, mi amor por ti no tiene límites, siempre estaré aquí.",
+        26: "Buenas tardes negre, cada día contigo es un nuevo motivo para sonreír.",
+        27: "Buenas noches negre, que tengas un sueño tranquilo y reparador.",
+        28: "Hola negre, buenos días, siempre serás mi mayor alegría y felicidad.",
+        29: "Buenas tardes negre, gracias por ser quien eres, te quiero mucho.",
+        30: "Buenas noches negre, este mes termina, pero mi amor por ti es eterno.",
+    },
+    mayo: {
+        1: "Hola negre, buenos días, hoy empieza un nuevo mes lleno de amor y alegría.",
+        2: "Buenas tardes negre, cada día contigo es especial, gracias por todo lo que haces por mí.",
+        3: "Buenas noches negre, que descanses bien, siempre estarás en mi corazón.",
+        4: "Hola negre, buenos días, cada amanecer es más bonito porque estás en mi vida.",
+        5: "Buenas tardes negre, tu amor es mi motor, siempre estaré aquí para ti.",
+        6: "Buenas noches negre, espero que tengas dulces sueños y un descanso reparador.",
+        7: "Hola negre, buenos días, me siento agradecido por cada día a tu lado.",
+        8: "Buenas tardes negre, mi amor por ti crece con cada momento que pasamos juntos.",
+        9: "Buenas noches negre, que tu noche sea tan tranquila como mi amor por ti es fuerte.",
+        10: "Hola negre, buenos días, cada día contigo es un regalo que siempre valoro.",
+        11: "Buenas tardes negre, gracias por ser la luz que ilumina mis días.",
+        12: "Buenas noches negre, que descanses bien, siempre pensaré en ti.",
+        13: "Hola negre, buenos días, mi vida es mejor contigo, nunca lo olvides.",
+        14: "Buenas tardes negre, te quiero más de lo que las palabras pueden expresar.",
+        15: "Buenas noches negre, que tengas una noche tranquila y llena de paz.",
+        16: "Hola negre, buenos días, gracias por ser mi alegría diaria.",
+        17: "Buenas tardes negre, cada momento contigo es especial y único.",
+        18: "Buenas noches negre, espero que sueñes con cosas hermosas, como tú.",
+        19: "Hola negre, buenos días, siempre estaré aquí para ti, no importa lo que pase.",
+        20: "Buenas tardes negre, eres mi mayor bendición, nunca lo olvides.",
+        21: "Buenas noches negre, mi amor por ti siempre será infinito.",
+        22: "Hola negre, buenos días, cada día a tu lado es más bonito que el anterior.",
+        23: "Buenas tardes negre, gracias por llenar mi vida de tanto amor.",
+        24: "Buenas noches negre, siempre estaré pensando en ti, no importa la hora.",
+        25: "Hola negre, buenos días, nunca dejaré de agradecer por haberte encontrado.",
+        26: "Buenas tardes negre, eres la razón de mi felicidad diaria.",
+        27: "Buenas noches negre, espero que descanses bien, siempre te amaré.",
+        28: "Hola negre, buenos días, cada día contigo es una nueva razón para sonreír.",
+        29: "Buenas tardes negre, nunca olvides lo especial que eres para mí.",
+        30: "Buenas noches negre, este mes termina, pero mi amor por ti nunca lo hará.",
+        31: "Hola negre, buenos días, mi amor por ti crece con cada día que pasa.",
+    },
+    junio: {
+        1: "Hola negre, buenos días, empieza un nuevo mes lleno de amor y felicidad.",
+        2: "Buenas tardes negre, cada día a tu lado es un regalo que siempre atesoro.",
+        3: "Buenas noches negre, que descanses y sueñes con cosas hermosas.",
+        4: "Hola negre, buenos días, me siento afortunado de tenerte en mi vida.",
+        5: "Buenas tardes negre, tu amor es mi motor para seguir adelante.",
+        6: "Buenas noches negre, siempre estarás en mi corazón, no importa la hora.",
+        7: "Hola negre, buenos días, cada amanecer es más bonito contigo en mi vida.",
+        8: "Buenas tardes negre, mi amor por ti es infinito, nunca lo dudes.",
+        9: "Buenas noches negre, que tengas un descanso tranquilo y reparador.",
+        10: "Hola negre, buenos días, me haces feliz cada día, gracias por estar a mi lado.",
+        11: "Buenas tardes negre, siempre serás mi mayor alegría, no importa lo que pase.",
+        12: "Buenas noches negre, que tengas dulces sueños, siempre pensaré en ti.",
+        13: "Hola negre, buenos días, gracias por llenar mi vida de amor y felicidad.",
+        14: "Buenas tardes negre, cada momento contigo es un tesoro que valoro profundamente.",
+        15: "Buenas noches negre, mi amor por ti crece cada día más, nunca lo olvides.",
+        16: "Hola negre, buenos días, cada día contigo es un regalo que siempre atesoro.",
+        17: "Buenas tardes negre, gracias por ser mi fortaleza y mi alegría diaria.",
+        18: "Buenas noches negre, espero que tengas una noche tranquila y llena de paz.",
+        19: "Hola negre, buenos días, siempre serás mi mayor felicidad, nunca lo dudes.",
+        20: "Buenas tardes negre, eres lo mejor que me ha pasado, gracias por existir.",
+        21: "Buenas noches negre, mi amor por ti nunca cambiará, solo crecerá.",
+        22: "Hola negre, buenos días, cada día contigo es más especial que el anterior.",
+        23: "Buenas tardes negre, gracias por todo lo que haces por mí, te quiero mucho.",
+        24: "Buenas noches negre, espero que descanses y sueñes con cosas hermosas.",
+        25: "Hola negre, buenos días, siempre seré tu apoyo incondicional.",
+        26: "Buenas tardes negre, nunca olvides cuánto te amo y lo feliz que me haces.",
+        27: "Buenas noches negre, que tengas dulces sueños, siempre estaré pensando en ti.",
+        28: "Hola negre, buenos días, mi amor por ti no tiene límites, siempre estaré aquí.",
+        29: "Buenas tardes negre, gracias por hacer cada día tan especial y único.",
+        30: "Buenas noches negre, este mes termina, pero mi amor por ti sigue creciendo.",
+    },
+    julio: {
+        1: "Hola negre, buenos días, un nuevo mes comienza, y mi amor por ti sigue creciendo.",
+        2: "Buenas tardes negre, cada momento contigo es especial, gracias por ser tú.",
+        3: "Buenas noches negre, espero que descanses y sueñes con cosas hermosas.",
+        4: "Hola negre, buenos días, me haces feliz cada día, eres increíble.",
+        5: "Buenas tardes negre, contigo todo es mejor, siempre serás mi mayor alegría.",
+        6: "Buenas noches negre, que tengas un descanso tranquilo, siempre pensaré en ti.",
+        7: "Hola negre, buenos días, cada día contigo es un regalo que atesoro.",
+        8: "Buenas tardes negre, gracias por llenar mi vida de amor y felicidad.",
+        9: "Buenas noches negre, nunca olvides lo especial que eres para mí.",
+        10: "Hola negre, buenos días, mi amor por ti no tiene límites, siempre estaré aquí.",
+        11: "Buenas tardes negre, cada momento contigo es un tesoro que valoro profundamente.",
+        12: "Buenas noches negre, que tengas dulces sueños, siempre estaré pensando en ti.",
+        13: "Hola negre, buenos días, gracias por ser mi fortaleza y mi alegría diaria.",
+        14: "Buenas tardes negre, cada día contigo es un regalo, y lo valoro mucho.",
+        15: "Buenas noches negre, mi amor por ti crece más cada día, nunca lo olvides.",
+        16: "Hola negre, buenos días, siempre serás mi mayor felicidad, nunca lo dudes.",
+        17: "Buenas tardes negre, eres lo mejor que me ha pasado, gracias por existir.",
+        18: "Buenas noches negre, que descanses bien, siempre estaré aquí para ti.",
+        19: "Hola negre, buenos días, cada día contigo es más especial que el anterior.",
+        20: "Buenas tardes negre, gracias por todo lo que haces por mí, te quiero mucho.",
+        21: "Buenas noches negre, mi amor por ti siempre será infinito.",
+        22: "Hola negre, buenos días, espero que tengas un día maravilloso lleno de amor.",
+        23: "Buenas tardes negre, gracias por ser mi alegría diaria, te quiero mucho.",
+        24: "Buenas noches negre, que descanses y sueñes con cosas hermosas.",
+        25: "Hola negre, buenos días, nunca dejaré de agradecer por haberte encontrado.",
+        26: "Buenas tardes negre, siempre serás mi mayor motivación y felicidad.",
+        27: "Buenas noches negre, espero que descanses bien, siempre estaré pensando en ti.",
+        28: "Hola negre, buenos días, mi amor por ti no tiene límites, siempre estaré aquí.",
+        29: "Buenas tardes negre, contigo cada día es especial y único.",
+        30: "Buenas noches negre, este mes termina, pero mi amor por ti sigue creciendo.",
+        31: "Hola negre, buenos días, gracias por hacer mi vida más bonita cada día.",
+    },
+    agosto: {
+        1: "Hola negre, buenos días, empieza un nuevo mes lleno de amor y alegría contigo.",
+        2: "Buenas tardes negre, eres lo mejor que me ha pasado, gracias por todo.",
+        3: "Buenas noches negre, espero que descanses bien y tengas dulces sueños.",
+        4: "Hola negre, buenos días, cada día contigo es un regalo que atesoro.",
+        5: "Buenas tardes negre, gracias por ser mi mayor felicidad y fortaleza.",
+        6: "Buenas noches negre, que tengas una noche tranquila y llena de paz.",
+        7: "Hola negre, buenos días, mi vida es más bonita contigo, gracias por existir.",
+        8: "Buenas tardes negre, cada momento contigo es especial y único.",
+        9: "Buenas noches negre, mi amor por ti crece cada día más, nunca lo olvides.",
+        10: "Hola negre, buenos días, cada día contigo es un motivo para sonreír.",
+        11: "Buenas tardes negre, eres mi mayor alegría, nunca lo olvides.",
+        12: "Buenas noches negre, espero que descanses bien, siempre estaré pensando en ti.",
+        13: "Hola negre, buenos días, gracias por ser mi apoyo incondicional.",
+        14: "Buenas tardes negre, cada día contigo es una nueva oportunidad de ser feliz.",
+        15: "Buenas noches negre, mi amor por ti siempre será infinito.",
+        16: "Hola negre, buenos días, eres mi mayor felicidad, nunca lo olvides.",
+        17: "Buenas tardes negre, contigo cada día es un regalo que valoro profundamente.",
+        18: "Buenas noches negre, espero que descanses y sueñes con cosas hermosas.",
+        19: "Hola negre, buenos días, mi amor por ti no tiene límites.",
+        20: "Buenas tardes negre, eres la luz de mi vida, gracias por todo.",
+        21: "Buenas noches negre, nunca olvides cuánto te amo.",
+        22: "Hola negre, buenos días, cada día contigo es un regalo.",
+        23: "Buenas tardes negre, gracias por ser mi mayor motivación y alegría.",
+        24: "Buenas noches negre, espero que tengas dulces sueños.",
+        25: "Hola negre, buenos días, siempre estaré aquí para ti, no importa lo que pase.",
+        26: "Buenas tardes negre, contigo todo es más bonito, gracias por existir.",
+        27: "Buenas noches negre, mi amor por ti es eterno, siempre estaré pensando en ti.",
+        28: "Hola negre, buenos días, mi amor por ti crece cada día más.",
+        29: "Buenas tardes negre, gracias por llenar mi vida de amor y felicidad.",
+        30: "Buenas noches negre, que tengas una noche tranquila y llena de paz.",
+        31: "Hola negre, buenos días, termina este mes, pero mi amor por ti es infinito.",
+    },
+    septiembre: {
+        1: "Hola negre, buenos días, empieza un nuevo mes, y siempre estaré aquí para ti.",
+        2: "Buenas tardes negre, gracias por ser mi felicidad diaria.",
+        3: "Buenas noches negre, espero que descanses bien y sueñes con cosas hermosas.",
+        4: "Hola negre, buenos días, mi amor por ti crece cada día más.",
+        5: "Buenas tardes negre, eres lo mejor que me ha pasado, siempre te amaré.",
+        6: "Buenas noches negre, nunca olvides lo importante que eres para mí.",
+        7: "Hola negre, buenos días, cada día contigo es una bendición.",
+        8: "Buenas tardes negre, siempre me haces sonreír, gracias por todo.",
+        9: "Buenas noches negre, que tengas dulces sueños, siempre pienso en ti.",
+        10: "Hola negre, buenos días, gracias por ser mi motivación diaria.",
+        11: "Buenas tardes negre, cada momento contigo es especial y único.",
+        12: "Buenas noches negre, que descanses bien, siempre estaré contigo.",
+        13: "Hola negre, buenos días, eres mi mayor felicidad, nunca lo olvides.",
+        14: "Buenas tardes negre, contigo cada día es un regalo que valoro.",
+        15: "Buenas noches negre, mi amor por ti siempre será infinito.",
+        16: "Hola negre, buenos días, espero que tengas un día maravilloso.",
+        17: "Buenas tardes negre, cada día contigo es un motivo para sonreír.",
+        18: "Buenas noches negre, que descanses tranquilo, siempre pensaré en ti.",
+        19: "Hola negre, buenos días, nunca olvidaré lo feliz que me haces.",
+        20: "Buenas tardes negre, mi amor por ti es infinito y siempre lo será.",
+        21: "Buenas noches negre, que tengas dulces sueños, siempre estaré aquí.",
+        22: "Hola negre, buenos días, cada día contigo es un nuevo motivo para sonreír.",
+        23: "Buenas tardes negre, gracias por ser mi mayor alegría.",
+        24: "Buenas noches negre, espero que descanses bien, te amo mucho.",
+        25: "Hola negre, buenos días, cada momento contigo es único y especial.",
+        26: "Buenas tardes negre, mi amor por ti es eterno, nunca lo dudes.",
+        27: "Buenas noches negre, espero que tengas dulces sueños, siempre pensaré en ti.",
+        28: "Hola negre, buenos días, gracias por hacer mi vida más bonita cada día.",
+        29: "Buenas tardes negre, cada día contigo es más especial que el anterior.",
+        30: "Buenas noches negre, termina el mes, pero mi amor por ti sigue creciendo.",
+    },
+    octubre: {
+        1: "Hola negre, buenos días, comienza un nuevo mes y siempre estaré aquí para ti.",
+        2: "Buenas tardes negre, cada día contigo es un regalo que valoro.",
+        3: "Buenas noches negre, que descanses bien, siempre estaré pensando en ti.",
+        4: "Hola negre, buenos días, mi amor por ti es más fuerte cada día.",
+        5: "Buenas tardes negre, contigo todo es más bonito, gracias por existir.",
+        6: "Buenas noches negre, espero que tengas una noche tranquila y reparadora.",
+        7: "Hola negre, buenos días, cada día contigo es más especial que el anterior.",
+        8: "Buenas tardes negre, gracias por ser mi alegría diaria.",
+        9: "Buenas noches negre, que tengas dulces sueños, siempre estaré pensando en ti.",
+        10: "Hola negre, buenos días, eres mi mayor motivación, gracias por todo.",
+        11: "Buenas tardes negre, contigo cada día es un nuevo motivo para sonreír.",
+        12: "Buenas noches negre, mi amor por ti es eterno, nunca lo olvides.",
+        13: "Hola negre, buenos días, mi vida es más bonita contigo.",
+        14: "Buenas tardes negre, cada momento contigo es único y especial.",
+        15: "Buenas noches negre, que descanses bien, siempre estaré aquí para ti.",
+        16: "Hola negre, buenos días, gracias por llenar mi vida de amor y felicidad.",
+        17: "Buenas tardes negre, cada día contigo es un regalo que valoro profundamente.",
+        18: "Buenas noches negre, que tengas dulces sueños, siempre estaré pensando en ti.",
+        19: "Hola negre, buenos días, mi amor por ti crece cada día más.",
+        20: "Buenas tardes negre, gracias por ser mi mayor alegría y felicidad.",
+        21: "Buenas noches negre, que descanses bien, siempre pensaré en ti.",
+        22: "Hola negre, buenos días, nunca dejaré de agradecer por haberte encontrado.",
+        23: "Buenas tardes negre, mi amor por ti es infinito y siempre lo será.",
+        24: "Buenas noches negre, espero que descanses tranquilo y lleno de paz.",
+        25: "Hola negre, buenos días, cada día contigo es más especial que el anterior.",
+        26: "Buenas tardes negre, gracias por ser mi alegría diaria.",
+        27: "Buenas noches negre, que tengas una noche tranquila y reparadora.",
+        28: "Hola negre, buenos días, mi amor por ti siempre será infinito.",
+        29: "Buenas tardes negre, contigo cada día es más bonito, gracias por todo.",
+        30: "Buenas noches negre, termina este mes, pero mi amor por ti sigue creciendo.",
+        31: "Hola negre, buenos días, gracias por hacer mi vida más bonita cada día.",
+    },
+    noviembre: {
+        1: "Hola negre, buenos días, comienza un nuevo mes lleno de amor y felicidad contigo.",
+        2: "Buenas tardes negre, cada momento contigo es único y especial.",
+        3: "Buenas noches negre, que descanses bien y sueñes con cosas hermosas.",
+        4: "Hola negre, buenos días, mi amor por ti siempre será infinito.",
+        5: "Buenas tardes negre, gracias por ser mi alegría diaria.",
+        6: "Buenas noches negre, que tengas dulces sueños, siempre estaré pensando en ti.",
+        7: "Hola negre, buenos días, mi amor por ti crece cada día más.",
+        8: "Buenas tardes negre, contigo todo es más bonito, gracias por existir.",
+        9: "Buenas noches negre, que tengas una noche tranquila y reparadora.",
+        10: "Hola negre, buenos días, mi vida es más bonita contigo.",
+        11: "Buenas tardes negre, cada día contigo es más especial que el anterior.",
+        12: "Buenas noches negre, mi amor por ti es eterno, nunca lo olvides.",
+        13: "Hola negre, buenos días, cada día contigo es un regalo que valoro.",
+        14: "Buenas tardes negre, gracias por ser mi mayor alegría.",
+        15: "Buenas noches negre, que descanses bien y sueñes con cosas hermosas.",
+        16: "Hola negre, buenos días, gracias por llenar mi vida de amor y felicidad.",
+        17: "Buenas tardes negre, contigo cada día es un motivo para sonreír.",
+        18: "Buenas noches negre, mi amor por ti es más fuerte cada día.",
+        19: "Hola negre, buenos días, mi vida es más bonita contigo, gracias por existir.",
+        20: "Buenas tardes negre, gracias por hacer mi mundo más feliz.",
+        21: "Buenas noches negre, que descanses bien, siempre estaré pensando en ti.",
+        22: "Hola negre, buenos días, mi amor por ti siempre será infinito.",
+        23: "Buenas tardes negre, cada día contigo es más especial que el anterior.",
+        24: "Buenas noches negre, que descanses bien y sueñes con cosas hermosas.",
+        25: "Hola negre, buenos días, nunca dejaré de agradecerte por ser parte de mi vida.",
+        26: "Buenas tardes negre, contigo todo es más bonito, gracias por existir.",
+        27: "Buenas noches negre, que tengas una noche tranquila y llena de paz.",
+        28: "Hola negre, buenos días, cada día contigo es un motivo para sonreír.",
+        29: "Buenas tardes negre, gracias por ser mi mayor alegría y felicidad.",
+        30: "Buenas noches negre, termina este mes, pero mi amor por ti sigue creciendo.",
+    },
+    diciembre2: {
+        1: "Hola negre, buenos días, comienza el último mes del año contigo, qué felicidad.",
+        2: "Buenas tardes negre, contigo cada día es un motivo para sonreír.",
+        3: "Buenas noches negre, espero que descanses bien y sueñes con cosas hermosas.",
+        4: "Hola negre, buenos días, mi amor por ti no tiene límites, nunca lo olvides.",
+        5: "Buenas tardes negre, cada momento contigo es especial, gracias por existir.",
+        6: "Buenas noches negre, espero que tengas una noche tranquila y reparadora.",
+        7: "Hola negre, buenos días, mi vida es más bonita contigo, gracias por todo.",
+        8: "Buenas tardes negre, gracias por hacer cada día más feliz y lleno de amor.",
+        9: "Buenas noches negre, que descanses bien, siempre estaré pensando en ti.",
+        10: "Hola negre, buenos días, eres mi mayor alegría y siempre lo serás.",
+        11: "Buenas tardes negre, contigo cada día es un regalo que atesoro.",
+        12: "Buenas noches negre, mi amor por ti es eterno y nunca cambiará.",
+        13: "Hola negre, buenos días, gracias por llenar mi vida de felicidad y amor.",
+        14: "Buenas tardes negre, cada momento contigo es único y especial.",
+        15: "Buenas noches negre, espero que descanses bien y sueñes con cosas hermosas.",
+        16: "Hola negre, buenos días, gracias por ser mi razón de felicidad diaria.",
+        17: "Buenas tardes negre, contigo cada día es una nueva oportunidad de ser feliz.",
+        18: "Buenas noches negre, mi amor por ti siempre será infinito.",
+        19: "Hola negre, buenos días, mi vida es mejor contigo, gracias por todo.",
+        20: "Buenas tardes negre, cada día contigo es un motivo para sonreír.",
+        21: "Buenas noches negre, que tengas una noche tranquila, siempre estaré aquí.",
+        22: "Hola negre, buenos días, el amor que siento por ti es inmenso y verdadero.",
+        23: "Buenas tardes negre, contigo todo es más bonito, gracias por existir.",
+        24: "Buenas noches negre, que tengas una noche llena de paz y tranquilidad.",
+        25: "Hola negre, buenos días, feliz Navidad, gracias por ser parte de mi vida.",
+        26: "Buenas tardes negre, contigo cada día es una celebración de amor.",
+        27: "Buenas noches negre, mi amor por ti siempre será infinito.",
+        28: "Hola negre, buenos días, gracias por ser mi mayor felicidad.",
+        29: "Buenas tardes negre, cada día contigo es un motivo para sonreír.",
+        30: "Buenas noches negre, que descanses bien, mi amor por ti nunca terminará.",
+        31: "Hola negre, buenos días, termina el año, pero mi amor por ti sigue creciendo.",
+            },
+            // Puedes agregar los demás meses aquí...
+        };
+
+        const months = [
+            { name: "Diciembre", days: 1, key: "diciembre" }, // Solo el 31 de diciembre
+            { name: "Enero", days: 31, key: "enero" }, // Mes completo de enero
+            { name: "Febrero", days: 28, key: "febrero" },
+            { name: "Marzo", days: 31, key: "marzo" },
+            { name: "Abril", days: 30, key: "abril" },
+            { name: "Mayo", days: 31, key: "mayo" },
+            { name: "Junio", days: 30, key: "junio" },
+            { name: "Julio", days: 31, key: "julio" },
+            { name: "Agosto", days: 31, key: "agosto" },
+            { name: "Septiembre", days: 30, key: "septiembre" },
+            { name: "Octubre", days: 31, key: "octubre" },
+            { name: "Noviembre", days: 30, key: "noviembre" },
+            { name: "Diciembre", days: 31, key: "diciembre2" }
+        ];
+
+        function createMonths() {
+            const monthsContainer = document.getElementById('months-container');
+
+            months.forEach(month => {
+                const monthDiv = document.createElement('div');
+                monthDiv.classList.add('month');
+                const monthTitle = document.createElement('h2');
+                monthTitle.textContent = month.name;
+                monthDiv.appendChild(monthTitle);
+                const monthGrid = document.createElement('div');
+                monthGrid.classList.add('grid');
+                monthDiv.appendChild(monthGrid);
+                createDays(month.key, month.days, monthGrid);
+                monthsContainer.appendChild(monthDiv);
+            });
+        }
+
+        function createDays(monthKey, totalDays, monthGrid) {
+            // Si es diciembre, solo mostramos el día 31
+            if (monthKey === "diciembre") {
+                const envelope = document.createElement('div');
+                envelope.classList.add('envelope');
+                envelope.innerHTML = `<span>31</span>`;
+                envelope.classList.add('unlocked');
+                envelope.onclick = () => showPopup(monthKey, 31);
+                monthGrid.appendChild(envelope);
+            } else {
+                for (let day = 1; day <= totalDays; day++) {
+                    const envelope = document.createElement('div');
+                    envelope.classList.add('envelope');
+                    envelope.innerHTML = `<span>${day}</span>`;
+                    envelope.classList.add('unlocked');
+                    envelope.onclick = () => showPopup(monthKey, day);
+                    monthGrid.appendChild(envelope);
+                }
+            }
+        }
+
+        function showPopup(monthKey, day) {
+            const message = messages[monthKey][day] || "Este día no tiene un mensaje definido.";
+            document.getElementById('day-number').textContent = day;
+            document.getElementById('message').textContent = message;
+            document.getElementById('popup').style.display = 'block';
+            document.getElementById('popup-background').style.display = 'block';
+        }
+
+        function closePopup() {
+            document.getElementById('popup').style.display = 'none';
+            document.getElementById('popup-background').style.display = 'none';
+        }
+
+        createMonths();
+    </script>
+</body>
+</html>
